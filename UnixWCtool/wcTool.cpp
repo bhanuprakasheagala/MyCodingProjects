@@ -25,6 +25,7 @@ struct Counts {
     int lines;
     int words;
     int bytes;
+    int chars;
     int maxLineLength;
 
     Counts() : lines(0), words(0), bytes(0), maxLineLength(0) {}
@@ -42,11 +43,18 @@ void countFile(const std::string& fileName, Counts& counts){
     std::string line;
     while(std::getline(file, line)) {
         counts.lines++;
-        counts.words += std::count_if(line.begin(), line.end(), ::isspace);
+        //counts.words += std::count_if(line.begin(), line.end(), ::isspace);
         counts.bytes += line.size() + 1;  // +1 for newline character
-
+        counts.chars += line.size() + 1;  // +1 for newline character
         if(line.size() > counts.maxLineLength) {
             counts.maxLineLength = line.size();
+        }
+
+        std::istringstream iss(line);
+        std::string word;
+
+        while(iss >> word) {
+            counts.words++;
         }
     }
 
@@ -54,7 +62,8 @@ void countFile(const std::string& fileName, Counts& counts){
 }
 
 void printCounts(const std::string& fileName, const Counts& counts){
-    std::cout << std::setw(8) << counts.lines << std::setw(8) << counts.words << std::setw(8) << counts.bytes;
+    std::cout << std::setw(8) << counts.lines << std::setw(8) << counts.words << std::setw(8) << counts.bytes
+    <<std::setw(8) << counts.chars << std::setw(8) << counts.maxLineLength;
     if(!fileName.empty()) {
         std::cout << " " << fileName;
     }
@@ -147,6 +156,7 @@ int main(int argc, char* argv[]) {
                 totalCounts.lines += counts.lines;
                 totalCounts.words += counts.words;
                 totalCounts.bytes += counts.bytes;
+                totalCounts.chars += counts.chars;
 
                 if (counts.maxLineLength > totalCounts.maxLineLength) {
                     totalCounts.maxLineLength = counts.maxLineLength;
@@ -163,11 +173,18 @@ int main(int argc, char* argv[]) {
         std::string line;
         while(std::getline(std::cin, line)) {
             totalCounts.lines++;
-            totalCounts.words += std::count_if(line.begin(), line.end(), ::isspace);
+            //totalCounts.words += std::count_if(line.begin(), line.end(), ::isspace);
             totalCounts.bytes += line.size() + 1; //+1 for newline character
 
             if(line.size() > totalCounts.maxLineLength) {
                 totalCounts.maxLineLength = line.size();
+            }
+
+            std::istringstream iss(line);
+            std::string word;
+
+            while(iss >> word) {
+                totalCounts.words++;
             }
         }
         printCounts("", totalCounts);
