@@ -60,7 +60,7 @@ void countFile(const std::string& fileName, Counts& counts){
 
     file.close();
 }
-
+/*
 void printCounts(const std::string& fileName, const Counts& counts){
     std::cout << std::setw(8) << counts.lines << std::setw(8) << counts.words << std::setw(8) << counts.bytes
     <<std::setw(8) << counts.chars << std::setw(8) << counts.maxLineLength;
@@ -69,7 +69,20 @@ void printCounts(const std::string& fileName, const Counts& counts){
     }
     std::cout << std::endl;
 }
+*/
+void printCounts(const Counts& counts, bool printLines, bool printWords, bool printChars, bool printBytes,
+bool printMaxLineLength, const std::string& fileName) {
+    if (printLines) std::cout << std::setw(8) << counts.lines;
+    if (printWords) std::cout << std::setw(8) << counts.words;
+    if (printChars) std::cout << std::setw(8) << counts.chars;
+    if (printBytes) std::cout << std::setw(8) << counts.bytes;
+    if (printMaxLineLength) std::cout << std::setw(8) << counts.maxLineLength;
 
+    if (!fileName.empty()) {
+        std::cout << " " << fileName;
+    }
+    std::cout << std::endl;
+}
 int main(int argc, char* argv[]) {
 
     /*if(argc < 2){
@@ -142,7 +155,7 @@ int main(int argc, char* argv[]) {
             // Read from standard input
             Counts totalCounts;
             countFile("-", totalCounts);
-            printCounts("", totalCounts);
+            printCounts(totalCounts, countLines, countWords, countChars, countBytes, countMaxLineLength, "");
         }
         else {
             // Read from files
@@ -151,7 +164,7 @@ int main(int argc, char* argv[]) {
                 Counts counts;
                 
                 countFile(file, counts);
-                printCounts(file, counts);
+                printCounts(counts, countLines, countWords, countChars, countBytes, countMaxLineLength, file);
                 
                 totalCounts.lines += counts.lines;
                 totalCounts.words += counts.words;
@@ -163,7 +176,8 @@ int main(int argc, char* argv[]) {
                 }
             }
             if(files.size() > 1) {
-                printCounts("total", totalCounts);
+                //printCounts("total", totalCounts);
+                printCounts(totalCounts, countLines, countWords, countChars, countBytes, countMaxLineLength, "total");
             }
         }
     }
@@ -187,7 +201,8 @@ int main(int argc, char* argv[]) {
                 totalCounts.words++;
             }
         }
-        printCounts("", totalCounts);
+        //printCounts("", totalCounts);
+        printCounts(totalCounts, countLines, countWords, countChars, countBytes, countMaxLineLength, "");
     }
     return 0;
 }
