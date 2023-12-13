@@ -33,14 +33,6 @@ void countFile(std::istream& input, Counts& counts) {
             counts.words++;
         }
     }
-    if(input.eof()) {
-        std::cerr << "Reached end of file \n";
-
-        if(input.fail()) {
-            input.clear();
-            std::cerr << "Cleared fail state\n";
-        }
-    }
 }
 
 void printCounts(const Counts& counts, bool printLines, bool printWords, bool printChars, bool printBytes,
