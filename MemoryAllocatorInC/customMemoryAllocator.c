@@ -80,3 +80,42 @@ void free(void *block) {
     pthread_mutex_unlock(&global_malloc_lock);
 }
 
+void *malloc(size_t size) {
+    size_t totalSize;
+    void* block;
+    header_t *header;
+    if(!size) {
+        return NULL;
+    }
+    pthread_mutex_lock(&global_malloc_lock);
+    header = get_free_block(size);
+    if(header) {
+        // Found a free block to accomodate requested memory
+        header->s.free = 0;
+        pthread_mutex_unlock(&global_malloc_lock);
+        // Return the pointer from the beginning of the actual block of memory excluding header
+        return (void*)(header+1);
+    }
+    // Need to get memory to fit in the requested block and header from OS
+    totalSize = sizeof(header_t) + size;
+    block = sbrk(totalSize);
+    if(block == (void*)-1) { // Unable to allocate the memory
+        pthread_mutex_unlock(&global_malloc_lock);
+        return NULL;
+    }
+    header = block;
+    header->s.size = size;
+    header->s.is_free = 0;
+    header->next = NULL;
+    if(!head) {
+        head = header;
+    }
+    if(tail) {
+        tail->s.next = header;
+    }
+    tail = header;
+    pthread_mutex_unlock(&global_malloc_lock);
+    
+    return (void*)(header+1);
+}
+
