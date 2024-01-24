@@ -119,3 +119,53 @@ void *malloc(size_t size) {
     return (void*)(header+1);
 }
 
+void* calloc(size_t n, size_t nSize) {
+    size_t size;
+    void* block;
+    if(!n || !nSize)
+        return NULL;
+    size = n * nSize;
+    // Check multiplication overflow
+    if(nSize != (size/n))
+        return NULL;
+    block = malloc(size);
+    if(!block)
+        return NULL;
+    memset(block, 0, size);
+
+    return block;
+}
+
+void* realloc(void* block, size_t size) {
+    header_t *header;
+    void* retReAllocBlock;
+
+    if(!block || !size) {
+        return malloc(size);
+    }
+
+    header = (header_t*)block - 1;
+    if(header->s.size >= size)
+         return block;
+    retReAllocBlock = malloc(size);
+    if(retReAllocBlock) {
+        // Reallocate contents to the new bigger block
+        memcpy(retReAllocBlock, block, header->s.size);
+
+        // Free the old memory block
+        free(block);
+    }
+    return retReAllocBlock;
+}
+
+// Function to print the entire linked list of Memory blocks
+void print_mem_list() {
+    header_t *current = head;
+    printf("head = %p, tail = %p\n", (void*)head, (void*)tail);
+
+    while(current) {
+        printf("addr = %p, size = %zu, is_free = %u, next = %p\n", (void*)current,
+                                          current->s.size, current->s.is_free, (void*)current->s.next);
+        current = current->s.next;
+    }
+}
