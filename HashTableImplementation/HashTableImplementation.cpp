@@ -72,6 +72,22 @@ void free_table(HashTable* table) {
     free(table);
 }
 
+void handle_collision(HashTable *table, unsigned long index, Ht_item *item) {
+    LinkedList *head = table->overflow_buckets[index];
+
+    if(head == NULL) {
+        head = allocate_list();
+        head->item = item;
+        table->overflow_buckets[index] = head;
+
+        return;
+    }
+    else {
+        table->overflow_buckets[index] = linkedlist_insert(head, item);
+        return;
+    }
+}
+
 // Print table
 void print_table(HashTable* table) {
     printf("\nHashTable\n-----------------------\n");
