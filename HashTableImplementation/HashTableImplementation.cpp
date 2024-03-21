@@ -241,7 +241,7 @@ void ht_insert(HashTable* table, char* key, char* value) {
             }
             else {
                 // Scenario2: Handle the collision.
-                handle_collision(table, item);
+                handle_collision(table, index, item);
                 return;
             }
         }
@@ -253,11 +253,18 @@ char* ht_search(HashTable* table, char* key) {
     int index = hash_function(key);
     Ht_item* item = table->items[index];
 
+    LinkedList* head = table->overflow_buckets[index];
+
     // Provide only non-null values
     if(item != NULL) {
         if(strcmp(item->key, key) == 0) {
             return item->value;
         }
+        if(head == NULL)
+            return NULL;
+
+        item = head->item;
+        head = head->next;
     }
 
     return NULL;
