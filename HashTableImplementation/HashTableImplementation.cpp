@@ -270,6 +270,29 @@ char* ht_search(HashTable* table, char* key) {
     return NULL;
 }
 
+// Delete an item from the table
+void ht_delete(HashTable *table, char *key) {
+    int index = hash_function(key);
+    Ht_item *item = table->items[index];
+    LinkedList *head = table->overflow_buckets[index];
+
+    if(item == NULL) {
+        std::cout << "Empty!!\n";
+        return;
+    }
+    else {
+        // Collision chain does not exist : Remove the item and set table index to NULL
+        if(head == NULL && strcmp(item->key, key) == 0) {
+            table->items[index] = NULL;
+            free_item(item);
+            table->count--;
+
+            return;
+        }
+        
+    }
+}
+
 // Display the item that matches the search key
 void print_search(HashTable* table, char* key) {
     char* val;
