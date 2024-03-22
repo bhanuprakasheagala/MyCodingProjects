@@ -289,7 +289,20 @@ void ht_delete(HashTable *table, char *key) {
 
             return;
         }
-        
+        // Collision chain exists: Remove the this item and set the head of the list as the new item
+        else if(head != NULL) {
+            if(strcmp(item->key, key) == 0) {
+                free_item(item);
+                LinkedList *node = head;
+                head = head->next;
+                node->next = NULL;
+                table->items[index] = create_item(node->item->key, node->item->value);
+                free_linkedlist(node);
+                table->overflow_buckets[index] = head;
+
+                return;
+            }
+        }
     }
 }
 
