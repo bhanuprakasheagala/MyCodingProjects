@@ -1,5 +1,60 @@
 #include <iostream>
+#include <stdlib.h>
+#include <string.h>
 
+// Defining HashTable Data structure
+typedef struct Ht_item {
+    char* key;
+    char* value;
+}Ht_item;
+
+// Implementing the overflow bucket list
+typedef struct LinkedList{
+    Ht_item* item;
+    struct LinkedList* next;
+} LinkedList;
+
+// Now, the HashTable has an array of pointers that point to Ht_item, so it is a double-pointer
+typedef struct HashTable {
+    // Contains an array of pointers to items
+    Ht_item** items;
+    LinkedList** overflow_buckets;
+    int size;
+    int count;
+} HashTable;
+
+// Create the overflow buckets; An array of linked lists
+LinkedList** create_overflow_buckets(HashTable* table) {
+    LinkedList** buckets = (LinkedList**)calloc(table->size, sizeof(LinkedList*));
+
+    for(int i=0; i<table->size; i++) {
+        buckets[i] = NULL;
+    }
+
+    return buckets;
+}
+
+void free_linkedlist(LinkedList* list) {
+    LinkedList* temp = list;
+
+    while(list) {
+        temp = list;
+        list = list->next;
+        free(temp->item->key);
+        free(temp->item->value);
+        free(temp->item);
+        free(temp);
+    }
+}
+
+// Free all the overflow bucket lists
+void free_overflow_buckets(HashTable* table) {
+    LinkedList** buckets = table->overflow_buckets;
+    for(int i=0; i<table->size; ++i) {
+        free_linkedlist(buckets[i]);
+    }
+    free(buckets);
+}
 // Choosing a hash function
 #define CAPACITY 500 // Size of the HashTable
 unsigned long hash_function(char *str) {
@@ -11,20 +66,67 @@ unsigned long hash_function(char *str) {
 
     return i%CAPACITY;
 }
-// Defining HashTable Data structure
-typedef struct Ht_item {
-    char* key;
-    char* value;
-}Ht_item;
 
-// Now, the HashTable has an array of pointers that point to Ht_item, so it is a double-pointer
-typedef struct HashTable {
-    // Contains an array of pointers to items
-    Ht_item** items;
-    LinkedList** overflow_buckets;
-    int size;
-    int count;
-} HashTable;
+
+// Allocates memory for a LinkedList pointer
+LinkedList* allocate_list() {
+    
+    LinkedList* list = (LinkedList*)malloc(sizeof(LinkedList));
+    return list;
+}
+
+// Inserts the item onto the LinkedList
+LinkedList* linkedlist_insert(LinkedList* list, Ht_item* item) {
+    
+    if(!list) {
+        LinkedList* head = allocate_list();
+        head->item = item;
+        head->next = NULL;
+        list = head;
+
+        return list;
+    }
+    else if(list->next == NULL) {
+        LinkedList* node = allocate_list();
+        node->item = item;
+        node->next = NULL;
+        list->next = node;
+
+        return list;
+    }
+    LinkedList* temp = list;
+    while(temp->next->next) {
+        temp = temp->next;
+    }
+
+    LinkedList* node = allocate_list();
+    node->item = item;
+    node->next = NULL;
+    temp->next = node;
+
+    return list;
+
+}
+// Removes the head of the LinkedList, returns the item of the popped element.
+Ht_item* linkedlist_remove(LinkedList* list) {
+    if(!list || !list->next) {
+        return NULL;
+    }
+    LinkedList* node = list->next;
+    LinkedList* temp = list;
+    temp->next = NULL;
+    list = node;
+
+    Ht_item* it = NULL;
+    memcpy(temp->item, it, sizeof(Ht_item));
+    free(temp->item->key);
+    free(temp->item->value);
+    free(temp->item);
+    free(temp);
+
+    return it;
+}
+
 
 // Create items by allocating memory for a key and value, and return a pointer to the item
 Ht_item* create_item(char* key, char* value) {
@@ -111,105 +213,8 @@ a collision, you will have a worst-case access time of O(n) as well.
 The advantage of this method is that it is a good choice if your hash table has a low capacity.
 */
 
-// Implementing the overflow bucket list
 
-typedef struct LinkedList{
-    Ht_item* item;
-    struct LinkedList* next;
-} LinkedList;
 
-// Allocates memory for a LinkedList pointer
-LinkedList* allocate_list() {
-    
-    LinkedList* list = (LinkedList*)malloc(sizeof(LinkedList));
-    return list;
-}
-
-// Inserts the item onto the LinkedList
-LinkedList* linkedlist_insert(LinkedList* list, Ht_item* item) {
-    
-    if(!list) {
-        LinkedList* head = allocate_list();
-        head->item = item;
-        head->next = NULL;
-        list = head;
-
-        return list;
-    }
-    else if(list->next == NULL) {
-        LinkedList* node = allocate_list();
-        node->item = item;
-        node->next = NULL;
-        list->next = node;
-
-        return list;
-    }
-    LinkedList* temp = list;
-    while(temp->next->next) {
-        temp = temp->next;
-    }
-
-    LinkedList* node = allocate_list();
-    node->item = item;
-    node->next = NULL;
-    temp->next = node;
-
-    return list;
-
-}
-
-// Removes the head of the LinkedList, returns the item of the popped element.
-Ht_item* linkedlist_remove(LinkedList* list) {
-    if(!list || !list->next) {
-        return NULL;
-    }
-    LinkedList* node = list->next;
-    LinkedList* temp = list;
-    temp->next = NULL;
-    list = node;
-
-    Ht_item* it = NULL;
-    memcpy(temp->item, it, sizeof(Ht_item));
-    free(temp->item->key);
-    free(temp->item->value);
-    free(temp->item);
-    free(temp);
-
-    return it;
-}
-
-void free_linkedlist(LinkedList* list) {
-    LinkedList* temp = list;
-
-    while(list) {
-        temp = list;
-        list = list->next;
-        free(temp->item->key);
-        free(temp->item->value);
-        free(temp->item);
-        free(temp);
-    }
-}
-
-// Create the overflow buckets; An array of linked lists
-LinkedList** create_overflow_buckets(HashTable* table) {
-    LinkedList** buckets = (LinkedList**)calloc(table->size, sizeof(LinkedList*));
-
-    for(int i=0; i<table->size; i++) {
-        buckets[i] = NULL;
-    }
-
-    return buckets;
-}
-
-// Free all the overflow bucket lists
-void free_overflow_buckets(HashTable** table) {
-    LinkedList** buckets = table->overflow_buckets;
-    for(int i=0; i<table->size; ++i) {
-        free_linkedlist(buckets[i]);
-    }
-    free(buckets);
-}
 
 // Inserting into the HashTable
 void ht_insert(HashTable* table, char* key, char* value) {
@@ -289,8 +294,8 @@ void ht_delete(HashTable *table, char *key) {
 
             return;
         }
-        // Collision chain exists: Remove the this item and set the head of the list as the new item
         else if(head != NULL) {
+            // Collision chain exists: Remove the this item and set the head of the list as the new item
             if(strcmp(item->key, key) == 0) {
                 free_item(item);
                 LinkedList *node = head;
@@ -301,6 +306,30 @@ void ht_delete(HashTable *table, char *key) {
                 table->overflow_buckets[index] = head;
 
                 return;
+            }
+            LinkedList *curr = head;
+            LinkedList *prev = NULL;
+
+            while(curr) {
+                if(strcmp(curr->item->key, key) == 0) {
+                    if(prev == NULL) {
+                        // First element of the chain : Remove the chain
+                        free_linkedlist(head);
+                        table->overflow_buckets[index] = NULL;
+                        return;
+                    }
+                    else {
+                        // This is somewhere in the chain
+                        prev->next = curr->next;
+                        curr->next = NULL;
+                        free_linkedlist(curr);
+                        table->overflow_buckets[index] = head;
+
+                        return;
+                    }
+                }
+                curr = curr->next;
+                prev = curr;
             }
         }
     }
@@ -332,8 +361,6 @@ int main()
 
     print_table(ht);
     free_table(ht);
-    print_table(ht);
-
 
     return 0;
 }
