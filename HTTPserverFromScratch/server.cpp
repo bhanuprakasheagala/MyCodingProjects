@@ -47,10 +47,30 @@ int main(int argc, char **argv) {
    
     std::cout << "Waiting for a client to connect...\n";
    
-    accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
-
+    int client_fd = accept(server_fd, (struct sockaddr *) &client_addr, (socklen_t *) &client_addr_len);
+    if(client_fd < 0) {
+      std::cout << "Failed to accept client\n";
+      return 1;
+    }
     std::cout << "Client connected\n";
-   
+
+    unsigned char buffer[1024];
+    ssize_t nbytes = recv(client_fd, buffer, 1024, 0);
+    if(nbytes < 0) {
+      std::cout << "Failed to recv from client\n";
+      close(client_fd);
+      return 1;
+    }
+
+    // Send HTTP Response - 200
+    std::string response {"HTTP/1.1 200 OK\r\n\r\n"};
+    nbytes = send(client_fd, response.c_str(), response.length(), 0);
+    if(nbytes < 0) {
+      std::cout << "Failed to connect to client\n";
+      close(client_fd);
+      return 1;
+    }
+
     close(server_fd);
 
     return 0;
