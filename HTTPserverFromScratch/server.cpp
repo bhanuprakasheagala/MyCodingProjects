@@ -7,6 +7,8 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <vector>
+#include <sstream>
 
 // Function to check if the HTTP request path is empty
 bool isEmptyPath(const std::string& request) {
@@ -61,35 +63,53 @@ int main(int argc, char **argv) {
   }
   std::cout << "Client connected\n";
 
-  // Buffer to store received data from client
-  char buffer[1024] = {0};
-  
-  // Receive data from the client
-  ssize_t nbytes = recv(client_fd, buffer, 1024, 0);
-  if (nbytes < 0) {
-    std::cerr << "Failed to recv from client\n";
-    close(client_fd);
-    return 1;
-  } 
+  if(client_fd != -1) {
+      char buffer[1024] = {0};
 
-  // Prepare HTTP response based on request path
-  std::string response = "HTTP/1.1 404 Not Found\r\n\r\n";
-  if (isEmptyPath(buffer)) {
-    // If request path is empty, send a 200 OK response
-    response = "HTTP/1.1 200 OK\r\n\r\n";
-  }
+      // Receive the message
+      ssize_t nbytes = recv(client_fd, buffer, 1024, 0);
+      if(nbytes < 0) {
+        std::cerr << "Failed to recv from client\n";
+        close(client_fd);
+        return 1;
+      } 
+      
+      // Parse the message
+      std::string message(buffer);
+      std::stringstream read(buffer);
+      std::string str;
+      std::vector<std::string> inputStrings;
 
-  // Send HTTP response back to the client
-  nbytes = send(client_fd, response.c_str(), response.length(), 0);
-  if (nbytes < 0) {
-    std::cerr << "Failed to send response to client\n";
-    close(client_fd);
-    return 1;
+      while(std::getline(read, str, ' ')) {
+        inputStrings.push_back(str);
+      }
+
+      std::string response;
+      if(inputStrings[1].rfind("/echo/", 0) == 0) {
+        // Get the part of the response that needs to be echoed
+        std::string echo = inputStrings[1];
+        echo.replace(0, 6, "");
+
+        // Create the response message
+        response = "HTTP/1.1 200 OK \r\n";
+        response.append("Content-Type: text/plain\r\n");
+        response.append("Content-Length: " + std::to_string(echo.length()) + "\r\n\r\n");
+        response.append(echo + "\r\n");
+
+      }
+      else if(inputStrings[1] != "/") {
+        response = "HTTP/1.1 404 Not Found \r\n\r\n";
+      }
+      else {
+        response = "HTTP/1.1 200 OK \r\n\r\n";
+      }
+      nbytes = send(client_fd, response.c_str(), response.length(), 0);
+      if(nbytes < 0) {
+        std::cerr << "Failed to connect to client\n";
+        close(client_fd);
+        return 1;
+      }
   }
-  
-  // Close client socket
-  close(client_fd);
-  
   // Close server socket
   close(server_fd);
 
