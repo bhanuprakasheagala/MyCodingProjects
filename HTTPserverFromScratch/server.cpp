@@ -10,14 +10,6 @@
 #include <vector>
 #include <sstream>
 
-// Function to check if the HTTP request path is empty
-bool isEmptyPath(const std::string& request) {
-  // Find the position of the first '/' character in the request
-  size_t rootPath = request.find('/');
-  // Check if the character immediately after '/' is a space, indicating an empty path
-  return isspace(request[rootPath + 1]);
-}
-
 int main(int argc, char **argv) {
   // Create a socket for the server to listen for incoming connections
   int server_fd = socket(AF_INET, SOCK_STREAM, 0);
