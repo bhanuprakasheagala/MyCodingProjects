@@ -2,27 +2,26 @@
 
 ## Introduction
 
-Welcome to another project that can take our C++ programming skills to one step better than yesterday.
+Welcome to another project that can take our C++ programming skills to one step towards mastery. This time we are doing Network programming.
 
-Here we implement an HTTP server from scratch using C++!!
+HTTP Server Request Response is the basic concept of modern web that is a simple and elegant. Just browse HTTP Server, you'll hit a lots of information in web!!
 
-**HTTP(Hyper Text Transfer Protocol)** is the protocol that powers the web. In this project, we 'll build a HTTP server that's capable of handling simple GET/POST requests,
-serving files and handling multiple concurrent connections. <br/>
+You can read all the basics about HTTP Server at <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview"> HTTP Overview </a>
 
-Along the way, we'll learn about TCP connections, HTTP headers, HTTP verbs, handling multiple connections and more. Let's start with the basics!!
+In this Project we are going to dive into the implementation of HTTP server. On the way, we focus on learning the following concepts of HTTP Protocol:
 
-## Basics of HTTP
-HTTP is a protocol for fetching resources such as HTML documents. It is the foundation of any data exchange on the Web and it is a client-server protocol, which means requests are initiated by the recipient, usually the Web browser. A complete document is reconstructed from the different sub-documents fetched, for instance, text, layout description, images, videos, scripts, and more.
+1. Start a TCP server on a Port (Bind to a Port)
+2. Respond with 200
+3. Respond with 404
+4. Respond with content
+5. Parse headers
+6. Concurrent connections
+7. GET a file
+8. POST a file
 
-![image](https://github.com/bhanuprakasheagala/MyCodingProjects/assets/31948251/86f7aad5-6089-42a7-9514-b7b66a6c7c48)
+We will try to cover each of the above step and implement it. At the end, we have our HTTP Server with all the basic functionalities.
 
-### The core concepts of HTTP include:
-
-**Client-Server Model:** HTTP operates in a client-server architecture, where a client sends requests and a server responds with resources. <br/>
-**Request Methods:** HTTP defines various request methods, such as GET, POST, PUT, DELETE, etc., each serving different purposes for data retrieval, submission, modification, or deletion. <br/>
-**URLs (Uniform Resource Locators):** Resources on the web are identified by URLs. HTTP requests include URLs to specify the location of the requested resource.<br/>
-**Status Codes:** HTTP responses include status codes indicating the outcome of the request. Status codes range from informational (1xx), success (2xx), redirection (3xx), client errors (4xx), to server errors (5xx).<br/>
-**Headers:** HTTP requests and responses contain headers that provide additional information about the request or response, such as content type, content length, cookies, etc.<br/>
+Happy learning!!!
 
 **Socket Programming Functions in C++ for HTTP:**
 
