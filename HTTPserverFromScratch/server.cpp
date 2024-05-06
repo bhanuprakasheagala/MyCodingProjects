@@ -69,6 +69,14 @@ int main(int argc, char **argv) {
       // Parse the message
       std::string message(buffer);
       std::stringstream read(buffer);
+      std::string line;
+      std::vector<std::string> lines;
+
+      while(std::getline(read, line)) {
+        lines.push_back(line);
+      }
+
+      std::stringstream readLine(lines[0]);
       std::string str;
       std::vector<std::string> inputStrings;
 
@@ -89,6 +97,22 @@ int main(int argc, char **argv) {
         response.append(echo + "\r\n");
 
       }
+      else if(inputStrings[1].rfind("/user-agent", 0) == 0) {
+          std::string ln;
+          for(int i=1; i<lines.size(); ++i) {
+            ln = lines[i];
+            if(ln.rfind("User-Agent: ", 0) == 0) {
+              ln.replace(0, 12, "");
+              ln.pop_back();
+              break;
+            }
+          }
+          // Create the response message
+          response = "HTTP/1.1 200 0K\r\n";
+          response.append("Content-Type: text/plain\r\n");
+          response.append("Content-Length: " + std::to_string(ln.length()) + "\r\n\r\n");
+          response.append(ln + "\r\n");
+       }
       else if(inputStrings[1] != "/") {
         response = "HTTP/1.1 404 Not Found \r\n\r\n";
       }
