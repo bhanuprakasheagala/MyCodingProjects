@@ -13,12 +13,11 @@
    - [Generating HTTP Responses](#generating-http-responses)
    - [Handling GET Requests](#handling-get-requests)
    - [Handling POST Requests](#handling-post-requests)
-6. [Examples](#examples)
+6. [Header Files and Network Programming](#header-files-and-network-programming)
+7. [Examples](#examples)
    - [GET Request Example](#get-request-example)
    - [POST Request Example](#post-request-example)
-7. [Compilation and Execution](#compilation-and-execution)
-8. [Contributing](#contributing)
-9. [License](#license)
+8. [Compilation and Execution](#compilation-and-execution)
 
 ## Introduction
 
@@ -74,14 +73,40 @@ The server will start listening for incoming connections on port `4221`.
 
 ## Code Walkthrough
 
+This section provides a detailed explanation of the code, including the key functions and syntaxes used in building the server.
+
 ### Main Server Loop
 
-The server starts by creating a TCP socket, binding it to a specified port, and then listening for incoming connections. The main server loop continuously accepts new connections and spawns a new thread to handle each client.
+The main server loop is the heart of the application. It creates a TCP socket, binds it to a port, and listens for incoming connections.
 
 ```cpp
 int main(int argc, char **argv) {
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    // ... (error handling and socket setup code)
+    if (server_fd < 0) {
+        std::cerr << "Failed to create server socket\n";
+        return 1;
+    }
+    
+    int reuse = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &reuse, sizeof(reuse)) < 0) {
+        std::cerr << "setsockopt failed\n";
+        return 1;
+    }
+    
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(4221);
+    
+    if (bind(server_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) != 0) {
+        std::cerr << "Failed to bind to port 4221\n";
+        return 1;
+    }
+    
+    if (listen(server_fd, 5) != 0) {
+        std::cerr << "listen failed\n";
+        return 1;
+    }
     
     while (true) {
         int client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &client_addr_len);
@@ -95,39 +120,64 @@ int main(int argc, char **argv) {
 }
 ```
 
-**Key Points:**
-- `socket()` creates a new socket.
-- `bind()` associates the socket with a specific port.
-- `listen()` puts the server in a state where it listens for incoming connections.
-- `accept()` accepts an incoming client connection.
-- `std::thread` is used to handle each client connection concurrently.
+**Key Points and Syntaxes:**
+
+- `socket()`: Creates a new socket. The parameters specify the address family (`AF_INET` for IPv4), the socket type (`SOCK_STREAM` for TCP), and the protocol (0 for IP).
+  
+- `setsockopt()`: Configures the socket options. In this case, `SO_REUSEPORT` allows the server to bind to a port that was recently used.
+  
+- `sockaddr_in`: A structure used to specify the address family, IP address, and port number. 
+
+- `bind()`: Associates the socket with the specified IP address and port. If `bind()` fails, it usually indicates that the port is already in use or the address is incorrect.
+
+- `listen()`: Puts the server socket in a passive listening mode where it waits for client connections. The second argument specifies the maximum length of the queue for pending connections.
+
+- `accept()`: Blocks and waits for an incoming connection. Once a client connects, `accept()` returns a new socket descriptor specific to that connection.
+
+- `std::thread` and `detach()`: Spawns a new thread to handle the client connection concurrently. The `detach()` function allows the thread to run independently from the main thread.
 
 ### Handling Client Connections
 
-The `handleConnection()` function is responsible for processing each client's request. It reads the request, parses it, generates a response, and sends the response back to the client.
+The `handleConnection()` function is executed in a separate thread for each client connection. It reads the client request, processes it, and sends an appropriate HTTP response.
 
 ```cpp
 void handleConnection(int client_fd) {
     char buffer[1024];
     ssize_t nbytes = recv(client_fd, buffer, sizeof(buffer), 0);
-    // ... (error handling code)
+    if (nbytes < 0) {
+        std::cerr << "Failed to recv from client\n";
+        close(client_fd);
+        return;
+    }
 
     std::string request(buffer, nbytes);
     std::string response = generateHttpResponse(request);
 
     nbytes = send(client_fd, response.c_str(), response.length(), 0);
-    // ... (error handling and cleanup code)
+    if (nbytes < 0) {
+        std::cerr << "Failed to send to client\n";
+        close(client_fd);
+        return;
+    }
+
+    close(client_fd);
+    std::cout << "Connection closed\n";
 }
 ```
 
-**Key Points:**
-- `recv()` receives data from the client.
-- `send()` sends data back to the client.
-- The connection is closed after the response is sent.
+**Key Points and Syntaxes:**
+
+- `recv()`: Receives data from a client socket. The function takes the socket descriptor, a buffer to store the received data, the buffer size, and flags (0 for default). It returns the number of bytes received or -1 on error.
+
+- `std::string(buffer, nbytes)`: Converts the raw character buffer into a C++ `std::string` for easier manipulation.
+
+- `send()`: Sends data to the client. Similar to `recv()`, it takes the socket descriptor, a buffer containing the data, the buffer length, and flags.
+
+- `close()`: Closes the socket connection. This is necessary to free up resources and allow new connections.
 
 ### Parsing HTTP Requests
 
-The `parseRequestHeaders()` function parses the raw HTTP request to extract headers and the request line.
+Parsing HTTP requests involves breaking down the raw request string into meaningful components (request line, headers, body).
 
 ```cpp
 std::vector<std::string> parseRequestHeaders(const std::string& request) {
@@ -142,13 +192,17 @@ std::vector<std::string> parseRequestHeaders(const std::string& request) {
 }
 ```
 
-**Key Points:**
-- A `stringstream` is used to read the request line-by-line.
-- The headers are stored in a vector of strings.
+**Key Points and Syntaxes:**
+
+- `std::stringstream`: A stream class to operate on strings. It allows us to read from a string as if it were an input stream.
+
+- `std::getline()`: Reads data from the input stream (`ss` in this case) into the provided string (`line`), stopping at newline characters. It helps to extract each line from the HTTP request.
+
+- `std::vector`: A dynamic array that can resize itself automatically. It is used to store the parsed headers.
 
 ### Generating HTTP Responses
 
-The `generateHttpResponse()` function generates the appropriate HTTP response based on the request method (`GET` or `POST`) and resource.
+This function determines the appropriate response based on the request method and resource path.
 
 ```cpp
 std::string generateHttpResponse(const std::string& request) {
@@ -172,239 +226,131 @@ std::string generateHttpResponse(const std::string& request) {
 }
 ```
 
-**Key Points:**
-- The function checks the HTTP method and calls the appropriate handler (`handleGetRequest()` or `handlePostRequest()`).
-- If the request is invalid or the method is not allowed, it returns an error response.
+**Key Points and Syntaxes:**
+
+- `auto`: Automatically deduces the type of the variable (`headers` in this case, which is `std::vector<std::string>`).
+
+- `std::istringstream`: Similar to `std::stringstream`, but specifically for input string streams. It is used here to parse the request line.
+
+- `request.substr()`: Returns a substring starting from the
+
+ specified index. It helps extract the body content from the request.
 
 ### Handling GET Requests
 
-The `handleGetRequest()` function handles `GET` requests and serves files from the server's directory.
+The `handleGetRequest()` function serves static files from the server's directory.
 
 ```cpp
 std::string handleGetRequest(const std::string& resource) {
-    std::string filename = resource == "/" ? "index.html" : resource.substr(1);
-    std::ifstream file(filename);
-
-    if (!file) {
+    std::ifstream file(resource.substr(1)); // Remove leading '/'
+    if (!file.is_open()) {
         return "HTTP/1.1 404 Not Found\r\n\r\n";
     }
 
-    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(content.length()) + "\r\n\r\n" + content;
-    return response;
+    std::stringstream ss;
+    ss << file.rdbuf(); // Read file into a string stream
+    std::string content = ss.str();
+
+    return "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(content.length()) + "\r\n\r\n" + content;
 }
 ```
 
-**Key Points:**
-- The root path (`/`) serves the `index.html` file.
-- If the requested file is not found, a `404 Not Found` response is returned.
-- If the file is found, its contents are read and returned with a `200 OK` status.
+**Key Points and Syntaxes:**
+
+- `std::ifstream`: An input file stream class used to read from files.
+
+- `file.is_open()`: Checks if the file stream is successfully opened.
+
+- `std::stringstream::rdbuf()`: Reads the entire file buffer into the string stream, which is then converted into a `std::string`.
 
 ### Handling POST Requests
 
-The `handlePostRequest()` function handles `POST` requests and saves the uploaded file data.
+The `handlePostRequest()` function saves data sent by clients.
 
 ```cpp
 std::string handlePostRequest(const std::string& resource, const std::string& body) {
-    std::ofstream file("uploaded_file.txt");
-    if (!file) {
+    std::ofstream file(resource.substr(1)); // Remove leading '/'
+    if (!file.is_open()) {
         return "HTTP/1.1 500 Internal Server Error\r\n\r\n";
     }
 
     file << body;
-    return "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 2\r\n\r\nOK";
+    file.close();
+    return "HTTP/1.1 201 Created\r\n\r\n";
 }
 ```
 
-**Key Points:**
-- The function saves the body of the `POST` request to a file named `uploaded_file.txt`.
-- If the file cannot be created, a `500 Internal Server Error` response is returned.
-- If the file is saved successfully, a `200 OK` response is returned.
+**Key Points and Syntaxes:**
+
+- `std::ofstream`: An output file stream class used to write to files.
+
+- `file << body`: Writes the body content to the file. The `<<` operator appends data to the stream.
+
+- `file.close()`: Closes the file stream. It's good practice to close files explicitly to free resources.
+
+## Header Files and Network Programming
+
+### Header Files Used
+
+1. **`<iostream>`**: Provides input/output stream functionality (`std::cout`, `std::cerr`, etc.).
+
+2. **`<cstdlib>`**: Defines several general-purpose functions, including dynamic memory management, random number generation, communication with the environment, and others.
+
+3. **`<string>`**: Contains the C++ Standard Library string class, which provides a way to handle strings as objects with methods for various string operations.
+
+4. **`<cstring>`**: Provides functions to manipulate C-style strings and arrays, such as `strlen()`, `strcpy()`, `strcmp()`, etc.
+
+5. **`<unistd.h>`**: Provides access to the POSIX operating system API. It includes definitions for system calls like `read()`, `write()`, `close()`, and `sleep()`.
+
+6. **`<sys/types.h>`**: Defines data types used in system calls. This header is necessary for using types like `size_t` and `ssize_t`.
+
+7. **`<sys/socket.h>`**: Contains definitions of the socket API for communication between computers. It provides functions like `socket()`, `bind()`, `listen()`, `accept()`, `recv()`, and `send()`.
+
+8. **`<arpa/inet.h>`**: Provides definitions for internet operations, such as converting IP addresses between binary and text form (`inet_ntoa()`, `inet_addr()`, etc.).
+
+9. **`<netdb.h>`**: Contains definitions for network database operations. It provides facilities for hostname to IP resolution.
+
+10. **`<vector>`**: Part of the C++ Standard Library, it provides the vector container, a dynamic array that can grow or shrink in size.
+
+11. **`<sstream>`**: Provides string stream classes like `std::stringstream`, `std::istringstream`, and `std::ostringstream` that facilitate string manipulation and parsing.
+
+12. **`<thread>`**: Provides the standard C++ thread library, allowing the creation and management of threads.
+
+13. **`<pthread.h>`**: Provides the POSIX thread (pthreads) library for multi-threading support. In this code, `<thread>` is preferred for portability and ease of use in C++.
+
+### Network Programming Concepts
+
+- **Sockets**: A socket is an endpoint for communication. The `socket()` function is used to create a socket. The server and client use sockets to establish a connection.
+
+- **Binding**: The `bind()` function assigns a local address to the socket. It is necessary to bind the server to a specific IP address and port to listen for incoming connections.
+
+- **Listening and Accepting**: The `listen()` function puts the server in a passive mode where it waits for client requests. The `accept()` function extracts the first connection request on the queue of pending connections and creates a new socket for that connection.
+
+- **Concurrent Connections**: The server handles multiple client connections using threads. Each client connection is handled in a separate thread, allowing multiple clients to connect and interact with the server simultaneously.
 
 ## Examples
 
 ### GET Request Example
 
-To test a `GET` request, you can use `curl`:
+To request a file named `index.html` from the server, you can use a tool like `curl`:
 
 ```sh
-curl http://localhost:4221/
+curl http://localhost:4221/index.html
 ```
-
-This will return the contents of `index.html` if it exists, or a `404 Not Found` error if it does not.
 
 ### POST Request Example
 
-To test a `POST` request, you can use `curl`:
+To upload a file using a `POST` request, you can use `curl`:
 
 ```sh
-curl -X POST -d "This is a test upload" http://localhost:4221/upload
+curl -X POST -d @file.txt http://localhost:4221/uploaded.txt
 ```
-
-This will save the content `"This is a test upload"` to a file named `uploaded_file.txt` on the server.
 
 ## Compilation and Execution
 
 To compile and run the server:
 
-1. **Compile** the source code:
-
-   ```sh
-   g++ -o server main.cpp server.cpp -pthread
-   ```
-
-2. **Run** the server:
-
-   ```sh
-   ./server
-   ```
-
-3. The server will start listening on port `4221`. Use any HTTP client (e.g., `curl` or a web browser) to interact with the server.
-
-
-# Socket Programming Functions in C++ for HTTP
-
-1. **Socket Creation (socket):**
-   - **Description:** The `socket()` function is used to create a socket, which is an endpoint for communication. It takes three arguments: domain (e.g., AF_INET for IPv4), type (e.g., SOCK_STREAM for TCP), and protocol (usually 0 for default protocol).
-   - **Syntax in C++:** `int socket(int domain, int type, int protocol);`
-   - **Example Code Usage:**
-     ```cpp
-     #include <sys/socket.h>
-     #include <iostream>
-     
-     int main() {
-         int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-         if (serverSocket == -1) {
-             std::cerr << "Error creating socket\n";
-             return 1;
-         }
-         std::cout << "Socket created successfully\n";
-         // Further code for binding, listening, etc.
-         return 0;
-     }
-     ```
-
-2. **Binding (bind):**
-   - **Description:** The `bind()` function associates a socket with a specific IP address and port number on the local machine. It takes the socket file descriptor, a sockaddr structure containing the address details, and the size of the address structure.
-   - **Syntax in C++:** `int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);`
-   - **Example Code Usage:**
-     ```cpp
-     #include <sys/socket.h>
-     #include <netinet/in.h>
-     #include <iostream>
-     
-     int main() {
-         struct sockaddr_in serverAddr;
-         serverAddr.sin_family = AF_INET;
-         serverAddr.sin_port = htons(8080); // Example port
-         serverAddr.sin_addr.s_addr = INADDR_ANY;
-     
-         int bindStatus = bind(serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr));
-         if (bindStatus == -1) {
-             std::cerr << "Error binding socket\n";
-             return 1;
-         }
-         std::cout << "Socket bound successfully\n";
-         // Further code for listening, accepting, etc.
-         return 0;
-     }
-     ```
-
-3. **Listening (listen):**
-   - **Description:** The `listen()` function puts the server socket into a passive mode, waiting for incoming connections from clients. It takes the socket file descriptor and the maximum number of connections that can be queued for processing.
-   - **Syntax in C++:** `int listen(int sockfd, int backlog);`
-   - **Example Code Usage:**
-     ```cpp
-     #include <sys/socket.h>
-     #include <iostream>
-     
-     int main() {
-         int listenStatus = listen(serverSocket, 5); // Example backlog size
-         if (listenStatus == -1) {
-             std::cerr << "Error listening on socket\n";
-             return 1;
-         }
-         std::cout << "Listening for connections\n";
-         // Further code for accepting connections, etc.
-         return 0;
-     }
-     ```
-
-4. **Accepting Connections (accept):**
-   - **Description:** The `accept()` function is called by a server to accept a connection request from a client. It creates a new socket for the connection and returns a new file descriptor representing the connected socket.
-   - **Syntax in C++:** `int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);`
-   - **Example Code Usage:**
-     ```cpp
-     #include <sys/socket.h>
-     #include <iostream>
-     
-     int main() {
-         struct sockaddr_in clientAddr;
-         socklen_t clientAddrLen = sizeof(clientAddr);
-         int clientSocket = accept(serverSocket, (struct sockaddr *)&clientAddr, &clientAddrLen);
-         if (clientSocket == -1) {
-             std::cerr << "Error accepting connection\n";
-             return 1;
-         }
-         std::cout << "Connection accepted from " << inet_ntoa(clientAddr.sin_addr) << ":" << ntohs(clientAddr.sin_port) << std::endl;
-         // Further code for sending/receiving data, etc.
-         return 0;
-     }
-     ```
-
-5. **Sending Data (send) and Receiving Data (recv):**
-   - **Description:** The `send()` function is used to send data over a connected socket, and the `recv()` function is used to receive data from a connected socket. Both functions take the socket file descriptor, a buffer containing the data, the size of the buffer, and optional flags.
-   - **Syntax in C++:** `ssize_t send(int sockfd, const void *buf, size_t len, int flags);` and `ssize_t recv(int sockfd, void *buf, size_t len, int flags);`
-   - **Example Code Usage (Sending):**
-     ```cpp
-     #include <sys/socket.h>
-     #include <iostream>
-     
-     int main() {
-         const char *message = "Hello, client!";
-         int sendStatus = send(clientSocket, message, strlen(message), 0);
-         if (sendStatus == -1) {
-             std::cerr << "Error sending data\n";
-             return 1;
-         }
-         std::cout << "Data sent successfully\n";
-         // Further code for receiving data, etc.
-         return 0;
-     }
-     ```
-   - **Example Code Usage (Receiving):**
-     ```cpp
-     #include <sys/socket.h>
-     #include <iostream>
-     
-     int main() {
-         char buffer[1024];
-         int recvSize = recv(clientSocket, buffer, sizeof(buffer), 0);
-         if (recvSize == -1) {
-             std::cerr << "Error receiving data\n";
-             return 1;
-         }
-         buffer[recvSize] = '\0'; // Null-terminate the received data
-         std::cout << "Received data: " << buffer << std::endl;
-         // Further code for processing data, etc.
-         return 0;
-     }
-     ```
-
-6. **Closing Sockets (close):**
-   - **Description:** The `close()` function is used to close a socket when communication is complete. It takes the socket file descriptor as an argument.
-   - **Syntax in C++:** `int close(int sockfd);`
-   - **Example Code Usage:**
-     ```cpp
-     #include <unistd.h>
-     
-     int main() {
-         close(clientSocket);
-         close(serverSocket);
-         return 0;
-     }
-     ```
-
-These socket programming functions in C++ provide the foundation for building HTTP servers capable of handling client requests and serving resources efficiently.
-
-
+```sh
+g++ -o server main.cpp server.cpp -pthread
+./server
+```
