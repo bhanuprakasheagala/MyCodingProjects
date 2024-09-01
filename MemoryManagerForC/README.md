@@ -50,3 +50,114 @@ This code implements a custom memory manager in C, providing functionality simil
 - **Not a Drop-in Replacement**: This custom memory manager is not a direct replacement for the standard C library functions (`malloc`, `free`, etc.) and should be used only in environments where complete control over memory allocation is desired.
 - **Thread Safety Limitations**: While the current implementation uses mutex locks to ensure thread safety, the underlying `sbrk` function is not thread-safe. In a multi-threaded environment, unexpected results could occur if `sbrk` is called concurrently by multiple threads.
 - **Fragmentation**: Like any memory manager, this implementation can suffer from fragmentation, especially if the allocation and deallocation patterns are erratic. Developers should be aware of this and use strategies to mitigate fragmentation if needed.
+
+## `sbrk()`: A Detailed Overview
+
+`sbrk()` is a system call in Unix-like operating systems that is used to manage the program's data segment, also known as the heap. The heap is a portion of a process's memory that is used for dynamic memory allocation, which is where `malloc`, `calloc`, `realloc`, and `free` operate. 
+
+#### What is `sbrk()`?
+
+The `sbrk()` system call is used to increment or decrement the program's data segment (heap). It essentially adjusts the "program break," which is the end of the process's data segment. The data segment is initially set up by the operating system when a program is loaded into memory, but it can be expanded or contracted using `sbrk()`.
+
+- **Syntax**:
+  ```c
+  void *sbrk(intptr_t increment);
+  ```
+
+  - **`increment`**: The amount by which the program break should be increased or decreased. A positive value increases the size of the heap, while a negative value decreases it.
+  - **Return Value**: `sbrk()` returns the previous program break address before the increment is applied. If there is an error (e.g., the increment would exceed the process's allowed data segment size), it returns `(void *)-1`.
+
+#### How Does `sbrk()` Work?
+
+When a process needs more heap memory, `sbrk()` can be called to move the program break forward by a certain amount. This effectively increases the size of the heap, allowing more memory to be allocated. Conversely, if a process wants to release some of its heap memory back to the system, it can call `sbrk()` with a negative increment to reduce the size of the heap.
+
+The actual memory allocation typically happens in conjunction with the `malloc` family of functions. When `malloc` requests more memory than is currently available in the free list, it might call `sbrk()` to request more memory from the OS.
+
+#### Examples of Using `sbrk()`
+
+1. **Expanding the Heap**:
+   ```c
+   #include <unistd.h>
+   #include <stdio.h>
+
+   int main() {
+       // Current end of the data segment
+       void *initial_break = sbrk(0);
+       printf("Initial program break: %p\n", initial_break);
+
+       // Expand the heap by 1024 bytes
+       if (sbrk(1024) == (void *)-1) {
+           perror("sbrk");
+           return 1;
+       }
+
+       void *new_break = sbrk(0);
+       printf("New program break: %p\n", new_break);
+
+       return 0;
+   }
+   ```
+
+   **Output**:
+   ```
+   Initial program break: 0x55d1e0
+   New program break: 0x55d220
+   ```
+
+   In this example, the program break is increased by 1024 bytes, effectively expanding the heap.
+
+2. **Reducing the Heap**:
+   ```c
+   #include <unistd.h>
+   #include <stdio.h>
+
+   int main() {
+       // Expand heap by 1024 bytes
+       void *initial_break = sbrk(1024);
+       printf("Initial break after expanding: %p\n", initial_break);
+
+       // Reduce heap by 512 bytes
+       if (sbrk(-512) == (void *)-1) {
+           perror("sbrk");
+           return 1;
+       }
+
+       void *reduced_break = sbrk(0);
+       printf("Break after reducing: %p\n", reduced_break);
+
+       return 0;
+   }
+   ```
+
+   **Output**:
+   ```
+   Initial break after expanding: 0x55d1e0
+   Break after reducing: 0x55d1a0
+   ```
+
+   This example shows how to reduce the heap size by moving the program break backwards.
+
+#### Use Cases of `sbrk()`
+
+1. **Custom Memory Allocators**:  
+   - `sbrk()` was historically used in custom memory management routines where the programmer wanted finer control over the allocation and deallocation of memory directly at the heap level.
+   - Low-level systems programming often involved using `sbrk()` to implement memory pools, custom allocation schemes, and to manage fragmented memory effectively.
+
+2. **Dynamic Memory Management Libraries**:
+   - Early implementations of dynamic memory management functions like `malloc`, `calloc`, and `realloc` internally used `sbrk()` to request additional memory from the OS when the free list was exhausted.
+
+3. **Legacy Software Systems**:
+   - Older software systems and legacy codebases often relied on `sbrk()` for heap management due to its simplicity and direct control over the heap. Applications written in C in the 1980s and 1990s, as well as some UNIX utilities, might have direct calls to `sbrk()`.
+
+#### Is `sbrk()` Still Used in Modern Codebases?
+
+**Deprecation**:
+- `sbrk()` is now considered a deprecated system call. Modern operating systems, including macOS and Linux, discourage its use in favor of more robust and safer memory allocation mechanisms like `mmap()` and `munmap()`.
+- `sbrk()` does not provide any guarantees about memory alignment, is not thread-safe, and does not work well with modern virtual memory systems where the heap and other memory regions (like shared libraries or memory-mapped files) need to be managed more flexibly.
+
+**Modern Alternatives**:
+- **`mmap()`/`munmap()`**: These system calls provide a more flexible way to manage memory. They allow for allocation and deallocation of memory at a specific address, making them better suited for modern applications that require precise control over memory layout.
+- **`malloc` and `free`**: The standard C library’s dynamic memory allocation functions are now backed by more sophisticated memory management techniques, often implemented using `mmap()` or using a combination of `mmap()` and `brk()` (a more flexible version of `sbrk()`).
+
+**Legacy Codebases**:
+- Some legacy systems, embedded systems, or older applications still rely on `sbrk()` due to their simplicity and the environment in which they run (e.g., an OS with limited memory management capabilities). However, this is increasingly rare as most systems transition to modern practices.
