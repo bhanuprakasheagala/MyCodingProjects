@@ -44,6 +44,27 @@ int main() {
         }
         else if(choice == 2) {
             // Deposit Money
+
+            int accNumber;
+            double amount;
+            
+            std::cout << "Enter Account Number: ";
+            std::cin >> accNumber;
+
+            std::cout << "Enter Deposit Number: ";
+            std::cin >> amount;
+
+            bool found = false;
+            for(auto& account : accounts) {
+                if(account.getAccountNumber() == accNumber) {
+                    account.deposit(amount);
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                std::cout << "Account not found!\n";
+            }
         }
     }
 
