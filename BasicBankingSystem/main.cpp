@@ -107,6 +107,55 @@ int main() {
                 std::cout << "Account Not Found!\n";
             }
         }
+        else if(choice == 5) {
+            // Display Transaction History
+            int accNumber;
+            std::cout << "Enter Account Number: ";
+            std::cin >> accNumber;
+
+            bool found = false;
+            for(const auto& account : accounts) {
+                if(account.getAccountNumber() == accNumber) {
+                    account.displayTransactionHistory();
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                std::cout << "Account Not Found!\n";
+            }
+        }
+        else if(choice == 6) {
+            // Calculate Interest 
+            int accNumber;
+            double interestRate;
+
+            std::cout << "Enter Account Number: ";
+            std::cin >> accNumber;
+
+            std::cout << "Enter Interest Rate (%): ";
+            std::cin >> interestRate;
+
+            bool found = false;
+            for(auto& account : accounts) {
+                if(account.getAccountNumber() == accNumber) {
+                    account.calculateInterest(interestRate);
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                std::cout << "Account Not Found!\n";
+            }
+        }
+        else if(choice == 7) {
+            // Exit the program
+            std::cout << "Exiting the program. Goodbye!\n";
+            break;
+        }
+        else {
+            std::cout << "Invalid choice! Please try again.\n";
+        }
     }
 
     return 0;
