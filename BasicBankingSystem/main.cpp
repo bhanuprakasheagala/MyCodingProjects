@@ -66,6 +66,47 @@ int main() {
                 std::cout << "Account not found!\n";
             }
         }
+        else if(choice == 3) {
+            // Withdraw Money
+            int accNumber;
+            double amount;
+
+            std::cout << "Enter Account Number: ";
+            std::cin >> accNumber;
+
+            std::cout << "Enter Withdrawal Amount: ";
+            std::cin >> amount;
+
+            bool found = false;
+            for(auto& account : accounts) {
+                if(account.getAccountNumber() == accNumber) {
+                    account.withdraw(amount);
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                std::cout << "Account Not Found!\n";
+            }
+        }
+        else if(choice == 4) {
+            // Display Account Information
+            int accNumber;
+            std::cout << "Enter Account Number: ";
+            std::cin >> accNumber;
+
+            bool found = false;
+            for(const auto& account : accounts) {
+                if(account.getAccountNumber() == accNumber) {
+                    account.displayAccountInfo();
+                    found = true;
+                    break;
+                }
+            }
+            if(!found) {
+                std::cout << "Account Not Found!\n";
+            }
+        }
     }
 
     return 0;
