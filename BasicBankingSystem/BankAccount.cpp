@@ -29,3 +29,41 @@ bool BankAccount::withdraw(double amount) {
         return false;
     }
 }
+
+// Method to display account information
+void BankAccount::displayAccountInfo() const {
+    std::cout << "Account Number: " << accountNumber << '\n';
+    std::cout << "Account Holder: " << accountHolderName << '\n';
+    std::cout << "Account Type: " << accountType << '\n';
+    std::cout << "Balance: Rupees " << balance << '\n';
+}
+
+// Method to display transaction history
+void BankAccount::displayTransactionHistory() const {
+    std::cout << "Transaction History for Account " << accountNumber << '\n';
+    for(const auto& transaction : transactionHistory) {
+        std::cout << transaction.type << ": INR " << transaction.amount << '\n';
+    }
+}
+
+// Method to calculate interest rate (Only for Savings account)
+void BankAccount::calculateInterest(double interestRate) {
+    if(accountType == "Savings") {
+        double interest = balance * (interestRate / 100);
+        deposit(interest); // Add interest to the balance
+        std::cout << "Interest of INR " << interest << " added to the account.\n";
+    }
+    else {
+        std::cout << "Interest calculation is only available for Savings account\n";
+    }
+}
+
+// Getter for account number
+int BankAccount::getAccountNumber() const {
+    return accountNumber;
+}
+
+// Getter for account type
+std::string BankAccount::getAccountType() const {
+    return accountType;
+}
