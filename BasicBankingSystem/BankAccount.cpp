@@ -1,8 +1,8 @@
 #include "BankAccount.hpp"
 
 // Constructor to initialize the Account details
-BankAccount::BankAccount(int accNumber, const std::string& accHolderName, double initialBalance, const std::string& accType)
-    : accountNumber(accNumber), accountHolderName(accHolderName), balance(initialBalance), accountType(accType) {}
+BankAccount::BankAccount(int accNumber, const std::string& accHolderName, double initialBalance, const std::string& accType, const std::string& pass)
+    : accountNumber(accNumber), accountHolderName(accHolderName), balance(initialBalance), accountType(accType), password(pass) {}
 
 // Method to deposit money into the account
 void BankAccount::deposit(double amount) {
@@ -56,6 +56,11 @@ void BankAccount::calculateInterest(double interestRate) {
     else {
         std::cout << "Interest calculation is only available for Savings account\n";
     }
+}
+
+// Method to validate the entered password
+bool BankAccount::validatePassword(const std::string& enteredPassword) const {
+    return enteredPassword == password;
 }
 
 // Getter for account number

@@ -19,10 +19,11 @@ class BankAccount {
         double balance;
         std::string accountType; // "Savings" or "Checking"
         std::vector<Transaction> transactionHistory;
+        std::string password;
 
     public:
         // Constructor to initialize account details
-        BankAccount(int accNumber, const std::string& accHolderName, double initialBalance, const std::string& accType);
+        BankAccount(int accNumber, const std::string& accHolderName, double initialBalance, const std::string& accType, const std::string& pass);
 
         // Method to deposit money into the account
         void deposit(double amount);
@@ -44,6 +45,9 @@ class BankAccount {
 
         // Getter for account type
         std::string getAccountType() const;
+
+        // Method to validate user password
+        bool validatePassword(const std::string& enteredPassword) const;
 };
 
 #endif
