@@ -25,6 +25,7 @@ int main() {
             std::string accHolderName;
             double initialBalance;
             std::string accType;
+            std::string password;
 
             std::cout << "Enter Account Number: ";
             std::cin >> accNumber;
@@ -39,72 +40,60 @@ int main() {
             std::cout << "Enter Account Type (Savings/Checking): ";
             std::cin >> accType;
 
-            accounts.emplace_back(accNumber, accHolderName, initialBalance, accType);
+            std::cout << "Set Account Password: ";
+            std::cin >> password;
+
+            accounts.emplace_back(accNumber, accHolderName, initialBalance, accType, password);
             std::cout << "Account created successfully!!\n";
         }
-        else if(choice == 2) {
-            // Deposit Money
+        else if(choice == 2 || choice == 3 || choice == 4) {
+            // Authentication before deposit, withdrawal, or viewing account
 
             int accNumber;
-            double amount;
+            
+            std::string password;
             
             std::cout << "Enter Account Number: ";
             std::cin >> accNumber;
 
-            std::cout << "Enter Deposit Number: ";
-            std::cin >> amount;
-
             bool found = false;
             for(auto& account : accounts) {
                 if(account.getAccountNumber() == accNumber) {
-                    account.deposit(amount);
-                    found = true;
-                    break;
+                    std::cout << "Enter Password: ";
+                    std::cin >> password;
+
+                    if(account.validatePassword(password)) {
+                        found = true;
+
+                        // Perform the corresponding operation
+                        if(choice == 2) {
+                            double amount;
+                            std::cout << "Enter Deposit Number: ";
+                            std::cin >> amount;
+                            account.deposit(amount);
+                        }
+                        else if(choice == 3) {
+                            // Withdraw money
+                            double amount;
+                            std::cout << "Enter Withdrawal Amount: ";
+                            std::cin >> amount;
+                            account.withdraw(amount);
+                        }
+                        else if(choice == 4) {
+                            // Display account information
+                            account.displayAccountInfo();
+                        }
+                        break;
+                    }
+                    else {
+                        std::cout << "Invalid Password!\n";
+                        found = true;
+                        break;
+                    }
                 }
             }
             if(!found) {
                 std::cout << "Account not found!\n";
-            }
-        }
-        else if(choice == 3) {
-            // Withdraw Money
-            int accNumber;
-            double amount;
-
-            std::cout << "Enter Account Number: ";
-            std::cin >> accNumber;
-
-            std::cout << "Enter Withdrawal Amount: ";
-            std::cin >> amount;
-
-            bool found = false;
-            for(auto& account : accounts) {
-                if(account.getAccountNumber() == accNumber) {
-                    account.withdraw(amount);
-                    found = true;
-                    break;
-                }
-            }
-            if(!found) {
-                std::cout << "Account Not Found!\n";
-            }
-        }
-        else if(choice == 4) {
-            // Display Account Information
-            int accNumber;
-            std::cout << "Enter Account Number: ";
-            std::cin >> accNumber;
-
-            bool found = false;
-            for(const auto& account : accounts) {
-                if(account.getAccountNumber() == accNumber) {
-                    account.displayAccountInfo();
-                    found = true;
-                    break;
-                }
-            }
-            if(!found) {
-                std::cout << "Account Not Found!\n";
             }
         }
         else if(choice == 5) {
