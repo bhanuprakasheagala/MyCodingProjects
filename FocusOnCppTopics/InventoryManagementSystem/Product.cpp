@@ -5,27 +5,27 @@ Product::Product(int id, const std::string& name, double price, int quantity)
     : productID(id), name(name), price(price), quantity(quantity) {}
 
 // Getter Methods
-int Prodcut::getProductID() const {
+int Product::getProductID() const {
     return productID;
 }
-std::string Prodcut::getName() const {
+std::string Product::getName() const {
     return name;
 }
-double Prodcut::getPrice() const {
+double Product::getPrice() const {
     return price;
 }
-int Prodcut::getQuantity() const {
+int Product::getQuantity() const {
     return quantity;
 }
 
 // Update quantity
-void Prodcut::updateQuantity(int qty) {
+void Product::updateQuantity(int qty) {
     quantity = qty;
 }
 
 // PerishableProduct Constructor
 PerishableProduct::PerishableProduct(int id, const std::string& name, double price, int quantity, const std::string& expirationDate)
-    : Prodcut(id, name, price, quantity), expirationDate(expirationDate) {}
+    : Product(id, name, price, quantity), expirationDate(expirationDate) {}
 
 // Display method for Perishable Product
 void PerishableProduct::display() const {
@@ -35,7 +35,7 @@ void PerishableProduct::display() const {
 
 // NonPerishableProduct Constructor
 NonPerishableProduct::NonPerishableProduct(int id, const std::string& name, double price, int quantity)
-    : Prodcut(id, name, price, quantity) {}
+    : Product(id, name, price, quantity) {}
 
 // Display method for NonPerishableProduct
 void NonPerishableProduct::display() const {

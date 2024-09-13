@@ -6,14 +6,14 @@
 
 class Inventory {
     private:
-        std::vector<Prodcut*> products;
+        std::vector<Product*> products;
 
     public:
         // Destructor to delete dynamically allocated products
         ~Inventory();
 
         // Add product to the inventory
-        void addProduct(Prodcut* product);
+        void addProduct(Product* product);
 
         // Remove product by ID
         bool removeProduct(int productID);
@@ -22,7 +22,7 @@ class Inventory {
         void displayInventory() const;
 
         // Find product by ID
-        Prodcut* findProduct(int productID) const;
+        Product* findProduct(int productID) const;
 };
 
 #endif

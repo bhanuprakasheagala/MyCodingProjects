@@ -8,7 +8,7 @@ Inventory::~Inventory() {
 }
 
 // Add product to the inventory
-void Inventory::addProduct(Prodcut* product) {
+void Inventory::addProduct(Product* product) {
     products.push_back(product);
 }
 
@@ -32,13 +32,13 @@ void Inventory::displayInventory() const {
         return;
     }
     for(const auto& product : products) {
-        products->display();
+        product->display();
         std::cout << "------------------------------\n";
     }
 }
 
 // Find product by ID
-Prodcut* Inventory::findProduct(int productID) const {
+Product* Inventory::findProduct(int productID) const {
     for(const auto& product : products) {
         if(product->getProductID() == productID) {
             return product;

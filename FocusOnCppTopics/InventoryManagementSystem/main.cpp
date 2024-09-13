@@ -56,7 +56,7 @@ int main() {
             std::cout << "Enter Product ID to remove: ";
             std::cin >> productID;
 
-            if(inventory.removeProdcut(productID)) {
+            if(inventory.removeProduct(productID)) {
                 std::cout << "Product removed Successfully!\n";
             }
             else {
