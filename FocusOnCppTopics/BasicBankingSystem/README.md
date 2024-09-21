@@ -26,6 +26,93 @@ SimpleBankingSystem/
 └── README.md              # Project documentation (this file)
 ```
 
+## Diagrams
+
+### 1. UML Class Diagram
+
+This diagram shows the structure of the `BankAccount` class and its main attributes and methods.
+
+```
++---------------------------+
+|       BankAccount          |
++---------------------------+
+| - accountNumber            |
+| - accountHolderName        |
+| - balance                  |
+| - accountType              |
+| - password                 |
+| - transactionHistory       |
++---------------------------+
+| + deposit() : void         |
+| + withdraw() : bool        |
+| + displayAccountInfo() : void|
+| + displayTransactionHistory() : void |
+| + calculateInterest() : void|
+| + validatePassword() : bool|
++---------------------------+
+```
+
+### 2. Program Flowchart
+
+This flowchart represents the high-level flow of the banking operations.
+
+```
++---------------------------+
+| Start                     |
++---------------------------+
+        |
+        v
++---------------------------+
+| Display Menu              |
++---------------------------+
+        |
+        v
++---------------------------+    +---------------------------+    +---------------------------+
+| Option 1: Create Account   | ->| Option 2: Deposit Money    | ->| Option 3: Withdraw Money   |
++---------------------------+    +---------------------------+    +---------------------------+
+        |
+        v
++---------------------------+    +---------------------------+    +---------------------------+
+| Option 4: Display Account  | ->| Option 5: Transaction Hist.| ->| Option 6: Calculate Interest|
++---------------------------+    +---------------------------+    +---------------------------+
+        |
+        v
++---------------------------+
+| Option 7: Exit             |
++---------------------------+
+        |
+        v
++---------------------------+
+| End                       |
++---------------------------+
+```
+
+### 3. System Architecture Diagram
+
+This diagram shows how the `BankAccount` class interacts with the console user interface in the `main.cpp`.
+
+```
++---------------------------+
+|       User Input           |
++---------------------------+
+            |
+            v
++---------------------------+
+|       main.cpp            |
++---------------------------+
+            |
+            v
++-----------------------------------+
+|          BankAccount              |
+|-----------------------------------|
+|  + deposit() : void               |
+|  + withdraw() : bool              |
+|  + displayAccountInfo() : void    |
+|  + displayTransactionHistory() : void |
+|  + calculateInterest() : void     |
+|  + validatePassword() : bool      |
++-----------------------------------+
+```
 ### Code Breakdown
 
 - **`BankAccount.hpp`**: This file contains the declaration of the `BankAccount` class. It defines the attributes such as account number, account holder's name, balance, account type, password, and transaction history. Key methods include `deposit()`, `withdraw()`, `calculateInterest()`, and `validatePassword()`.
