@@ -1,4 +1,4 @@
-# Matrix Class Template
+# Matrix Operations using Templates
 
 ## Overview
 
