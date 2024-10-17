@@ -1,255 +1,151 @@
-# Matrix Operations using Templates
+# Matrix Class Template in C++
 
 ## Overview
 
-This project implements a **Matrix class template** in C++, supporting common matrix operations such as addition, multiplication, transposition, and determinant calculation. The code demonstrates key C++ template concepts, offering flexibility to handle matrices of arbitrary sizes (rows and columns) and is entirely type-safe.
+This project provides a robust implementation of a matrix class in C++ using templates, allowing users to perform various matrix operations such as addition, multiplication, transposition, and determinant calculation. It is designed to be flexible, efficient, and easy to use, making it suitable for both educational purposes and practical applications in linear algebra.
 
-This project is designed to help beginners understand how template programming can be applied to real-world problems. Special attention is given to the `determinant` function, which showcases advanced template techniques such as **template specialization** and **recursive template instantiation**.
+## Features
 
-## Key Features
-- **Matrix creation** for any dimension defined at compile-time using templates.
-- **Matrix operations** including addition, multiplication, and transposition.
-- **Determinant calculation** for square matrices, including specializations for `1x1` and `2x2` matrices.
-- Detailed error handling for invalid operations such as index out of bounds or non-square matrices in determinant calculation.
-
----
+- **Template-Based**: Define matrices of any size at compile-time.
+- **Basic Operations**: Perform addition, multiplication, and transposition of matrices.
+- **Determinant Calculation**: Calculate the determinant for square matrices using recursion.
+- **Error Handling**: Implements exception handling for out-of-bounds access and ensures safety through static assertions.
 
 ## Getting Started
 
-### Prerequisites
-- C++11 or later is required for the code to compile.
-- A compiler supporting C++ templates (e.g., GCC or Clang).
+To get started with the project, clone this repository to your local machine:
 
-### Execution
-
-You can compile the project using:
 ```bash
-g++ -std=c++11 Matrix.cpp -o matrix
-./matrix
+git clone https://github.com/yourusername/matrix-template.git
+cd matrix-template
 ```
 
-### Usage
+### Prerequisites
 
-Here is an example of how you can use the `Matrix` class:
-```cpp
-Matrix<2, 3> mat1;
-mat1.set(0, 0, 1);
-mat1.set(0, 1, 2);
-mat1.set(0, 2, 3);
-mat1.set(1, 0, 4);
-mat1.set(1, 1, 5);
-mat1.set(1, 2, 6);
+Make sure you have a C++ compiler (like `g++`) installed. This project is compatible with C++11 and above.
 
-// Printing the matrix
-mat1.print();
-```
+## Project Structure
 
----
+- `Matrix.hpp`: Contains the full implementation of the `Matrix` class template.
+- `Matrix.cpp`: A demonstration of how to use the `Matrix` class, showcasing its features through various operations.
 
-## Template Concepts Explained
+## How It Works
 
-### 1. Class Templates
-The `Matrix` class is a **class template** that allows you to create matrices of any size, where the dimensions are provided as template parameters:
-```cpp
-template <size_t Rows, size_t Cols>
-class Matrix {
-    std::array<std::array<int, Cols>, Rows> data;
-    // ...
-};
-```
-Here, `Rows` and `Cols` are non-type template parameters that define the number of rows and columns in the matrix. This makes the `Matrix` class flexible for any matrix size, known at compile time.
+### Code Flow
 
-### 2. Template Specialization
-The **determinant** function is only meaningful for square matrices. Additionally, calculating the determinant is straightforward for `1x1` and `2x2` matrices, so we specialize the determinant function for these cases:
+1. **Creating a Matrix**: You instantiate a matrix using `Matrix<Rows, Cols>`, where `Rows` and `Cols` specify the matrix dimensions. The constructor initializes all elements to zero.
+
+2. **Setting and Getting Elements**: Use `set(row, col, value)` to assign a value at a specific position, and `get(row, col)` to retrieve it. Both methods include bounds checking to prevent invalid access.
+
+3. **Printing the Matrix**: Call `print()` to display the matrix elements in a formatted way.
+
+4. **Performing Operations**:
+   - **Addition**: Use `add(otherMatrix)` to add another matrix of the same dimensions.
+   - **Multiplication**: Use `multiply(otherMatrix)` to multiply with another matrix, ensuring the number of columns in the first matrix matches the number of rows in the second.
+   - **Transposition**: Call `transpose()` to obtain a new matrix where rows and columns are swapped.
+   - **Determinant**: Use `determinant()` to calculate the determinant of square matrices, with special handling for 1x1 and 2x2 cases.
+
+### Example Usage
+
+Here’s a brief example demonstrating how to use the `Matrix` class in `main.cpp`:
 
 ```cpp
-template<>
-long Matrix<1, 1>::determinant() const {
-    return data[0][0];
-}
-
-template<>
-long Matrix<2, 2>::determinant() const {
-    return data[0][0] * data[1][1] - data[0][1] * data[1][0];
-}
-```
-**Why use specialization?**
-- **Specialization** allows us to provide a specific implementation for certain template arguments. In this case, it simplifies the determinant calculation for `1x1` and `2x2` matrices.
-- This avoids redundant code or unnecessary complexity, improving both readability and performance.
-
-### 3. Recursive Template Instantiation for Determinant
-
-**What is Recursive Template Instantiation?**
-
-Recursive template instantiation occurs when a template function or class calls itself with modified template arguments. This concept is particularly powerful in C++ because it allows problems to be broken down into smaller, easier-to-solve parts—much like traditional recursion in programming.
-
-#### Determinant Example
-
-In the matrix determinant function, recursive template instantiation is used to calculate the determinant of a square matrix larger than `2x2`. The general determinant calculation is done by recursively reducing the matrix into smaller submatrices, eventually reaching the base case (`1x1` or `2x2` matrix), which has direct solutions.
-
-**How does it work?**
-1. **Base Case (1x1 and 2x2 matrices)**: We define specialized versions of the determinant for `1x1` and `2x2` matrices. These are simple cases where the determinant is straightforward to calculate.
-    - `1x1` determinant: the only element in the matrix.
-    - `2x2` determinant: `ad - bc` for a matrix of the form:
-      ```
-      | a b |
-      | c d |
-      ```
-
-2. **Recursive Case for Larger Matrices**: For an `NxN` matrix (`N > 2`), the determinant is computed by expanding along the first row (Laplace expansion). For each element in the first row, a smaller submatrix is formed by removing that element's row and column. The process repeats until we reach the `1x1` or `2x2` base case.
-
-Here's the recursive instantiation concept in action:
-```cpp
-template <size_t Rows, size_t Cols>
-long Matrix<Rows, Cols>::determinant() const {
-    static_assert(Rows == Cols, "Determinant is only defined for square matrices");
-
-    long det = 0;
-    for (size_t j = 0; j < Cols; ++j) {
-        Matrix<Rows - 1, Cols - 1> submatrix;
-        // Create submatrix by removing first row and j-th column
-        for (size_t sub_i = 0; sub_i < Rows - 1; ++sub_i) {
-            for (size_t sub_j = 0; sub_j < Cols - 1; ++sub_j) {
-                submatrix.set(sub_i, sub_j, this->get(sub_i + 1, (sub_j >= j ? sub_j + 1 : sub_j)));
-            }
-        }
-        // Recursive call to determinant
-        det += (j % 2 == 0 ? 1 : -1) * this->get(0, j) * submatrix.determinant();
-    }
-
-    return det;
-}
-```
-
-**Step-by-Step Breakdown**:
-1. **Recursive Function Call**: In each recursive step, a smaller submatrix is formed and passed to the `determinant()` function recursively.
-2. **Base Case Handling**: When the recursive call reaches a matrix size of `1x1` or `2x2`, the specialized versions of the determinant are invoked, ending the recursion.
-3. **Recursive Expansion**: The result of each recursive call contributes to the final determinant calculation through the formula:
-   \[
-   \text{determinant} = \sum_{j=0}^{N-1} (-1)^j \times \text{matrix}[0][j] \times \text{determinant of submatrix}
-   \]
-   
-This approach breaks down the problem recursively until it reaches a solvable base case. 
-
-**Why use recursive template instantiation?**
-- **Efficiency**: The recursion allows you to handle matrices of arbitrary size without hardcoding each case.
-- **Compile-time guarantees**: Through `static_assert`, the recursion is only triggered for valid (square) matrices, reducing runtime errors.
-
-### 4. Template Function Overloading
-
-**What is Template Function Overloading?**
-
-Template function overloading allows multiple template functions to be defined with the same name but with different parameter types or numbers of parameters. In this context, the compiler decides which version of the function to invoke based on the arguments passed at compile time.
-
-#### Multiply Function Example
-
-In the matrix multiplication function, we overload the template function based on the matrix dimensions. Matrix multiplication is only valid when the number of columns in the first matrix matches the number of rows in the second matrix. The template enforces this relationship by parameterizing the number of columns in the second matrix.
-
-```cpp
-template <size_t OtherCols>
-Matrix<Rows, OtherCols> multiply(const Matrix<Cols, OtherCols>& other) const {
-    Matrix<Rows, OtherCols> result;
-    for (size_t i = 0; i < Rows; ++i) {
-        for (size_t j = 0; j < OtherCols; ++j) {
-            int sum = 0;
-            for (size_t k = 0; k < Cols; ++k) {
-                sum += this->get(i, k) * other.get(k, j);
-            }
-            result.set(i, j, sum);
-        }
-    }
-    return result;
-}
-```
-
-In this case, `OtherCols` is a new template parameter for the number of columns in the second matrix. The `multiply` function:
-- Takes another matrix as an argument where the number of rows equals the number of columns of the first matrix.
-- Returns a result matrix where the dimensions are `Rows x OtherCols`.
-
-**How does function overloading work here?**
-
-Let's consider an example:
-
-```cpp
-Matrix<2, 3> mat1;
-Matrix<3, 2> mat2;
-Matrix<2, 2> result = mat1.multiply(mat2);
-```
-
-Here:
-- `mat1` is a `2x3` matrix.
-- `mat2` is a `3x2` matrix.
-- The function signature `multiply(const Matrix<Cols, OtherCols>&)` will match `mat2` because the template parameters `Cols` (from `mat1`) and `Rows` (from `mat2`) are compatible.
-
-The function template ensures at compile-time that the matrices can be multiplied, producing a `2x2` result. If you tried multiplying incompatible matrices (e.g., `2x3` with `2x3`), the compiler would catch this as an error, ensuring that the operation is mathematically valid.
-
-**Why is this useful?**
-- **Compile-time checking**: You can ensure matrix multiplication only occurs between compatible matrices, reducing the risk of runtime errors.
-- **Code reuse**: The template allows you to write the multiplication logic once, yet apply it to any combination of compatible matrices, regardless of their dimensions.
-
-**Beginners’ Tip**:
-Think of template function overloading as a way to give a function different behaviors based on the types or number of arguments passed to it. C++ will figure out the correct version to use based on the types involved.
-
-For larger square matrices (`n x n`, where `n > 2`), the determinant is computed using a **recursive expansion** along the first row. This is achieved by using recursive template instantiation:
-
-```cpp
-template <size_t Rows, size_t Cols>
-long Matrix<Rows, Cols>::determinant() const {
-    static_assert(Rows == Cols, "Determinant is only defined for square matrices");
-    long det = 0;
+int main() {
+    Matrix<2, 3> mat1;
+    mat1.set(0, 0, 1);
+    mat1.set(0, 1, 2);
+    mat1.set(0, 2, 3);
+    mat1.set(1, 0, 4);
+    mat1.set(1, 1, 5);
+    mat1.set(1, 2, 6);
     
-    // Recursive expansion
-    for (size_t j = 0; j < Cols; ++j) {
-        Matrix<Rows - 1, Cols - 1> submatrix;
-        // Fill the submatrix by excluding the current row and column
-        for (size_t sub_i = 0; sub_i < Rows - 1; ++sub_i) {
-            for (size_t sub_j = 0; sub_j < Cols - 1; ++sub_j) {
-                submatrix.set(sub_i, sub_j, this->get(sub_i + 1, (sub_j >= j ? sub_j + 1 : sub_j)));
-            }
-        }
-        det += (j % 2 == 0 ? 1 : -1) * data[0][j] * submatrix.determinant();
-    }
-    return det;
+    Matrix<2, 3> mat2;
+    mat2.set(0, 0, 7);
+    mat2.set(0, 1, 8);
+    mat2.set(0, 2, 9);
+    mat2.set(1, 0, 1);
+    mat2.set(1, 1, 2);
+    mat2.set(1, 2, 3);
+    
+    Matrix<2, 3> matSum = mat1.add(mat2);
+    matSum.print(); // Outputs the result of matrix addition
 }
 ```
-**How does this work?**
-- This implementation is recursive and relies on the **minor matrix expansion** technique, where smaller submatrices are created by excluding a row and column at each step.
-- The recursion continues until it hits a base case (`2x2` or `1x1` matrix), for which the specialized templates are called.
-  
-**Key Points**:
-- `static_assert` is used to ensure that determinant calculation is only applied to square matrices.
-- Each recursive call generates a smaller matrix and eventually reduces to cases handled by the template specializations.
-The **multiply** function template accepts another matrix as a parameter, with a compile-time check that the matrices can be multiplied based on their dimensions:
-```cpp
-template <size_t OtherCols>
-Matrix<Rows, OtherCols> multiply(const Matrix<Cols, OtherCols>& other) const {
-    Matrix<Rows, OtherCols> result;
-    for (size_t i = 0; i < Rows; ++i) {
-        for (size_t j = 0; j < OtherCols; ++j) {
-            int sum = 0;
-            for (size_t k = 0; k < Cols; ++k) {
-                sum += this->get(i, k) * other.get(k, j);
-            }
-            result.set(i, j, sum);
-        }
-    }
-    return result;
-}
-```
-This function:
-- Ensures matrices with compatible dimensions are multiplied.
-- Uses the compile-time sizes `Rows`, `Cols`, and `OtherCols` to statically ensure correctness.
-- The result is also a template matrix, allowing flexible dimensions for the resulting matrix.
+## Error Handling
 
-### 5. Static Assertions
-We use `static_assert` in several places to enforce **compile-time constraints**. For example, the determinant function uses this to ensure it is only called on square matrices:
-```cpp
-static_assert(Rows == Cols, "Determinant is only defined for square matrices");
-```
-This prevents misuse of the function, ensuring errors are caught early during compilation.
+- Out-of-bounds access is managed using exceptions. Attempting to access an invalid index will throw `std::out_of_range`.
+- Compile-time checks ensure that operations like determinant calculations are only performed on square matrices, preventing logical errors.
 
----
+# Key Concepts in the Matrix Class Implementation
 
-## Conclusion
+### 1. C++ Templates
 
-This project showcases the power and flexibility of **templates in C++**. The matrix operations are statically checked, ensuring correctness at compile-time, while still providing a flexible framework to handle matrices of varying sizes. By using template specialization and recursion, the code efficiently handles different matrix operations without sacrificing readability.
+**Concept**: Templates in C++ allow you to write generic and reusable code. The `Matrix` class is defined using template parameters, enabling it to handle matrices of any specified size.
+
+**How It Works**: The template parameters `Rows` and `Cols` are specified at compile-time, allowing the class to generate a specific instance of `Matrix` for those dimensions.
+
+**Why It Matters**: This flexibility means you can create matrices of different sizes without duplicating code. For instance, `Matrix<3, 3>` creates a 3x3 matrix, while `Matrix<2, 4>` creates a 2x4 matrix. If you omitted templates and hard-coded sizes, you'd have to create separate classes for each matrix size, leading to code duplication and maintenance challenges.
+
+**Potential Issues**: If you forget to use `template` or define a method without it, the compiler will not understand the function as a template, leading to compilation errors.
+
+### 2. Static Assertions
+
+**Concept**: `static_assert` is used to perform compile-time checks.
+
+**How It Works**: The line `static_assert(Rows == Cols, "Determinant is only defined for square matrices");` ensures that the determinant function is only called for square matrices.
+
+**Why It Matters**: This prevents runtime errors by catching mistakes at compile time. If someone tries to calculate the determinant of a non-square matrix, they’ll receive a clear error message immediately.
+
+**Potential Issues**: If you remove or modify this assertion, you could end up attempting to calculate the determinant for a non-square matrix, leading to incorrect results or undefined behavior.
+
+### 3. Exception Handling
+
+**Concept**: The `set` and `get` methods include checks for out-of-bounds access, throwing exceptions if the indices are invalid.
+
+**How It Works**: The code checks if the specified row and column indices are within the valid range. If not, it throws an `std::out_of_range` exception.
+
+**Why It Matters**: This safeguards against accessing invalid memory, which could lead to crashes or corrupted data. Proper exception handling makes the code more robust and user-friendly.
+
+**Potential Issues**: If you were to omit these checks, users could access elements outside the bounds of the matrix, leading to undefined behavior. This could cause crashes or incorrect calculations elsewhere in the program.
+
+### 4. Matrix Operations
+
+#### Addition
+
+**Concept**: The `add` method iterates through each element of the two matrices and sums corresponding elements.
+
+**How It Works**: The method creates a new `Matrix` object to hold the results, using a nested loop to access each element.
+
+**Why It Matters**: This straightforward implementation is intuitive and aligns with how matrix addition is defined mathematically.
+
+**Potential Issues**: If you forget to check the dimensions of the two matrices before addition, you could end up with a runtime error or incorrect results. Always ensure both matrices are of the same size.
+
+#### Multiplication
+
+**Concept**: The `multiply` method implements matrix multiplication, which requires the number of columns in the first matrix to equal the number of rows in the second matrix.
+
+**How It Works**: A nested loop structure calculates the dot product for each element in the resulting matrix.
+
+**Why It Matters**: Matrix multiplication is not commutative, and understanding the relationship between dimensions is crucial for correct operations.
+
+**Potential Issues**: If you accidentally try to multiply matrices with incompatible dimensions (e.g., a 2x3 matrix with a 2x2 matrix), you would either need to implement additional checks or risk undefined behavior. Proper checks or static assertions would help avoid such issues.
+
+### 5. Determinant Calculation
+
+**Concept**: The determinant function is recursively defined, especially for matrices larger than 2x2.
+
+**How It Works**: It creates submatrices and applies the Laplace expansion, which is a classic method for calculating determinants.
+
+**Why It Matters**: This method showcases the recursive nature of determinant calculation and emphasizes understanding matrix properties.
+
+**Potential Issues**: Recursive implementations can lead to performance issues for large matrices due to excessive function calls and stack depth. An iterative approach or optimization techniques could be beneficial for larger matrices.
+
+### 6. Transpose Operation
+
+**Concept**: The `transpose` function switches rows and columns.
+
+**How It Works**: It creates a new matrix and sets each element according to its transposed position.
+
+**Why It Matters**: Transposing is a fundamental operation in linear algebra, relevant for various applications, such as solving systems of equations and transforming data.
+
+**Potential Issues**: Forgetting to create a new matrix for the result could lead to data being overwritten. Always ensure that operations that alter dimensions return new matrix instances.
