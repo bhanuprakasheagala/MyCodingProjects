@@ -40,4 +40,13 @@ public:
     void saveToFile(std::ofstream& file) const override;
 };
 
+class Truck : public Vehicle {
+    private:
+        double loadCapacity;
+    public:
+        Truck(std::string id, std::string mdl, double rate, double capacity);
+        void displayDetails() const override;
+        void saveToFile(std::ofstream& file) const override;
+};
+
 #endif
