@@ -261,3 +261,77 @@ The `simulateMultipleUsers()` method simulates concurrent users creating rentals
    ```sh
    ./VehicleRentalSystem
    ```
+
+## Project Components and Relationships
+
++--------------------------------------------+
+|          VehicleManagementSystem           |
+|--------------------------------------------|
+| - vehicles: map<string, shared_ptr<Vehicle>> |
+| - customers: map<string, shared_ptr<Customer>> |
+| - rentals: list<shared_ptr<Rental>>         |
+| + createRental()                            |
+| + addVehicle<T>()                           |
+| + addCustomer()                             |
+| + displayAllVehicles()                      |
+| + displayAllRentals()                       |
+| + sortVehiclesByRate()                      |
+| + saveToFile()                              |
+| + loadFromFile()                            |
+| + simulateMultipleUsers()                   |
++--------------------------------------------+
+            ^                ^           ^
+            |                |           |
+           has              has          |
+            |                |           |
++-----------+----+      +----+-----------+      
+|                |      |                |
+|                |      |                |
+|   +------------v------+-----------+    |
+|   |       Vehicle                 |    |
+|   +-------------------------------+    |
+|   | - vehicleId: string           |    |
+|   | - model: string               |    |
+|   | - rentalRatePerDay: double    |    |
+|   | + displayDetails()            |    |
+|   | + getVehicleId()              |    |
+|   | + getRentalRate()             |    |
+|   +-------------------------------+    |
+|              ^                          |
+|              | inherits                 |
+| +------------+------+-----------+       |
+| |                    |           |      |
+| |                    |           |      |
+| |                    |           |      |
+| |                    |           |      |
+| v                    v           v      v
++-------------------+ +----------------+ +-----------------+
+|     Car           | |      Bike      | |     Truck      |
+|-------------------| |----------------| |-----------------|
+| - numSeats: int   | | - isElectric:  | | - loadCapacity:|
+|                   | |   bool         | |   double       |
++-------------------+ +----------------+ +-----------------+
+
++---------------------+
+|      Customer       |
+|---------------------|
+| - customerId: string|
+| - name: string      |
+| - phoneNumber: string|
+| + displayDetails()  |
+| + getCustomerId()   |
++---------------------+
+                ^
+                |
+                | associated
+                |
++----------------------------------+
+|             Rental               |
+|----------------------------------|
+| - rentalId: string               |
+| - rentalDays: int                |
+| - vehicle: shared_ptr<Vehicle>   |
+| - customer: shared_ptr<Customer> |
+| + displayRentalDetails()         |
+| + saveToFile()                   |
++----------------------------------+
