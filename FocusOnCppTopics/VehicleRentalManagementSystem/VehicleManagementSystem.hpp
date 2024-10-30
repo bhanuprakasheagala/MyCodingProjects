@@ -20,7 +20,10 @@ public:
     VehicleManagementSystem();
 
     template<typename T>
-    void addVehicle(T* vehicle);
+    void addVehicle(T* vehicle) {
+        std::lock_guard<std::mutex> lock(mtx);
+        vehicles[vehicle->getVehicleId()] = std::shared_ptr<Vehicle>(vehicle);
+    }
 
     void addCustomer(Customer* customer);
     void createRental(std::string rentalID, std::string customerID, std::string vehicleID, int days);

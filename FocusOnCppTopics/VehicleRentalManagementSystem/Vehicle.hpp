@@ -1,5 +1,5 @@
 #ifndef VEHICLE_HPP
-#define  VEHICLE_HPP
+#define VEHICLE_HPP
 
 #include <iostream>
 #include <fstream>
