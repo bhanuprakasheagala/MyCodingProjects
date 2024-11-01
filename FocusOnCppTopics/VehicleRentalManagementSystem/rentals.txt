@@ -1,0 +1,2 @@
+Rent001 Cust1 Bike201 3 50
+Rent002 Cust3 Truck301 4 150

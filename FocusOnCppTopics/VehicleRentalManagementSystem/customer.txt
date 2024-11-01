@@ -1,0 +1,3 @@
+Cust1 Alice 555-145
+Cust2 Bob 678-132
+Cust3 Fred 536-845
