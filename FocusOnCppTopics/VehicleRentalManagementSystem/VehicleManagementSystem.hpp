@@ -30,7 +30,7 @@ public:
     void displayAllRentals() const;
     void displayAllVehicles() const;
     void saveToFile() const;
-    void loadFromFile() const;
+    void loadFromFile();
     void sortVehicleByRate() const;
     void simulateMultipleUsers();
 };
