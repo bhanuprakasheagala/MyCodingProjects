@@ -124,7 +124,7 @@ void VehicleManagementSystem::sortVehicleByRate() const {
 void VehicleManagementSystem::simulateMultipleUsers() {
     std::thread t1([&]() {
         try {
-            createRental("Rent03", "Cust01", "Car101", 2);
+            createRental("Rent002", "Cust1", "Car101", 2);
         }
         catch(const std::exception& e) {
             std::cerr << e.what() << '\n';
@@ -133,7 +133,7 @@ void VehicleManagementSystem::simulateMultipleUsers() {
 
     std::thread t2([&] () {
         try {
-            createRental("RENT004", "CUST002", "BIKE201", 1);
+            createRental("Rent001", "Cust2", "Bike201", 1);
         } catch (const std::exception& e) {
             std::cerr << e.what() << std::endl;
         }

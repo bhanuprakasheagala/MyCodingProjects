@@ -9,7 +9,7 @@ int main() {
     vms.loadFromFile();
 
     // Sample vehicles and customers for testing
-    vms.addVehicle(new Car("CAR101", "Tesla Model S", 100, 4));
+    vms.addVehicle(new Car("Car101", "Tesla Model S", 100, 4));
     vms.addVehicle(new Bike("Bike201", "HD Ride", 50, false));
     vms.addVehicle(new Truck("Truck301", "Ford F-150", 150, 5));
 

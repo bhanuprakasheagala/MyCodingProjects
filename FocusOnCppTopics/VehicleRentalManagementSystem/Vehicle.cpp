@@ -41,7 +41,7 @@ void Bike::saveToFile(std::ofstream& file) const {
 Truck::Truck(std::string id, std::string mdl, double rate, double capacity) : Vehicle(id, mdl, rate), loadCapacity(capacity) {}
 
 void Truck::displayDetails() const {
-    std::cout << "Truck ID: " << vehicleId << "\nModel: " << model << "\n Load Capacity: " << loadCapacity << "\n Rate per day: INR" << rentalRatePerDay << '\n';
+    std::cout << "Truck ID: " << vehicleId << "\nModel: " << model << "\nLoad Capacity: " << loadCapacity << "\nRate per day: INR" << rentalRatePerDay << '\n';
 }
 
 void Truck::saveToFile(std::ofstream& file) const {
