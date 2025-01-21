@@ -335,3 +335,61 @@ The `simulateMultipleUsers()` method simulates concurrent users creating rentals
 | + displayRentalDetails()         |
 | + saveToFile()                   |
 +----------------------------------+
+
+## Sample Generated Output
+
+g++ --std=c++11 *.cpp -o vehiclemanagementsystem
+./vehiclemanagementsystem
+
+Bike ID: Bike201
+Model: HD Ride
+Is Electric: No
+Rate per day: INR50
+------------------------------
+Car ID: Car101
+Model: Tesla Model S
+Seats: 4
+Rate per day: INR100
+------------------------------
+Truck ID: Truck301
+Model: Ford F-150
+Load Capacity: 5
+Rate per day: INR150
+------------------------------
+Rental ID: Rent001
+Customer ID: Cust1
+Name: Alice
+Phone: 555-145
+Bike ID: Bike201
+Model: HD Ride
+Is Electric: No
+Rate per day: INR50
+Rental Days: 3
+Total Cost: INR150
+------------------------------
+Rental ID: Rent002
+Customer ID: Cust3
+Name: Fred
+Phone: 536-845
+Truck ID: Truck301
+Model: Ford F-150
+Load Capacity: 5
+Rate per day: INR150
+Rental Days: 4
+Total Cost: INR600
+------------------------------
+Bike ID: Bike201
+Model: HD Ride
+Is Electric: No
+Rate per day: INR50
+----------------------------------
+Car ID: Car101
+Model: Tesla Model S
+Seats: 4
+Rate per day: INR100
+----------------------------------
+Truck ID: Truck301
+Model: Ford F-150
+Load Capacity: 5
+Rate per day: INR150
+----------------------------------
