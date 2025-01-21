@@ -203,3 +203,27 @@ int main() {
 
     return 0;
 }
+
+/*
+Sample Output:
+p1 = 0x102350018, p2 = 0x102350094
+Memory list after malloc
+head = 0x102350000, tail = 0x10235007c
+addr = 0x102350000, size = 100, is_free = 0, next = 0x10235007c
+addr = 0x10235007c, size = 200, is_free = 0, next = 0x0
+Memory list after p1 freed
+head = 0x102350000, tail = 0x10235007c
+addr = 0x102350000, size = 100, is_free = 1, next = 0x10235007c
+addr = 0x10235007c, size = 200, is_free = 0, next = 0x0
+p3 = 0x102350018
+Memory list after calloc
+head = 0x102350000, tail = 0x10235007c
+addr = 0x102350000, size = 100, is_free = 0, next = 0x10235007c
+addr = 0x10235007c, size = 200, is_free = 0, next = 0x0
+Memory list after p2 freed
+head = 0x102350000, tail = 0x102350000
+addr = 0x102350000, size = 100, is_free = 0, next = 0x0
+Memory list after p3 freed
+head = 0x102350000, tail = 0x102350000
+addr = 0x102350000, size = 100, is_free = 1, next = 0x0
+*/
