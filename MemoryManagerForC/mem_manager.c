@@ -22,7 +22,7 @@ header_t* get_free_block(size_t size) {
 
 void* malloc(size_t size) {
     size_t total_size;
-    void* block;
+    void* block = NULL;
     header_t* header;
 
     if(!size) {
@@ -64,8 +64,8 @@ void* malloc(size_t size) {
 }
 
 void free(void* block) {
-    header_t* header, *temp;
-    void* program_break;
+    header_t* header = NULL, *temp = NULL;
+    void* program_break = NULL;
 
     if(!block) {
         return;
@@ -101,7 +101,7 @@ void free(void* block) {
 
 void* calloc(size_t num, size_t nSize) {
     size_t size;
-    void* block;
+    void* block = NULL;
 
     if(!num || !nSize) {
         return NULL;
@@ -123,8 +123,8 @@ void* calloc(size_t num, size_t nSize) {
 }
 
 void* realloc(void* block, size_t size) {
-    header_t* header;
-    void* ret;
+    header_t* header = NULL;
+    void* ret = NULL;
 
     if(!block || !size) {
         return malloc(size);
@@ -156,10 +156,50 @@ void print_mem_list() {
 
 int main() {
     void *p1 = malloc(100);
+    if(!p1) {
+        printf("malloc failed\n");
+        return -1;
+    }
+
     void *p2 = malloc(200);
+    if(!p2) {
+        printf("malloc failed\n");
+        return -1;
+    }
+    printf("p1 = %p, p2 = %p\n", p1, p2);
+    printf("Memory list after malloc\n");
     print_mem_list();
-    free(p1);
-    free(p2);
+
+    if(p1) {
+        free(p1);
+    }
+    p1 = NULL;
+    printf("Memory list after p1 freed\n");
     print_mem_list();
+
+    void *p3 = calloc(10, sizeof(int));
+    if(!p3) {
+        printf("calloc failed\n");
+        return -1;
+    }
+    printf("p3 = %p\n", p3);
+    printf("Memory list after calloc\n");
+    print_mem_list();
+
+    if(p2) {
+        free(p2);
+    }
+    p2 = NULL;
+    printf("Memory list after p2 freed\n");
+    print_mem_list();
+    
+    if(p3) {
+        free(p3);
+    }
+    p3 = NULL;
+    printf("Memory list after p3 freed\n");
+    print_mem_list();
+    
+
     return 0;
 }
