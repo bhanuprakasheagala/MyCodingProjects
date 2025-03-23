@@ -88,12 +88,24 @@ void handle_builtin_commands(const std::vector<std::string>& arguments, const st
         }
         else {
             perror("pwd"); // perror() is a system call to print the error message.
+            std::cerr << "pwd: error getting current directory\n";
         }
     }
     else if(arguments[0] == "cd") {
         if(arguments.size() < 2) {
             std::cerr << "cd: missing argument\n";
             return;
+        }
+        if(arguments[1] == "~") {
+            const char* home = getenv("HOME");
+            if(home) {
+                chdir(home);
+                return;
+            }
+            else {
+                std::cerr << "cd: HOME not set\n";
+                return;
+            }
         }
         if(chdir(arguments[1].c_str()) != 0) { // Attempt to change the directory
             perror("cd"); // Print error message if chdir() fails
